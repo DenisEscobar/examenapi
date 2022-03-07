@@ -21,10 +21,13 @@ class MainActivity : AppCompatActivity(), androidx.appcompat.widget.SearchView.O
     lateinit var imagesPuppies:List<String>
     lateinit var dogsAdapter: DogsAdapter
 
+    lateinit var searchBreed: SearchView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-//        val searchBreed = findViewById<SearchView>(R.id.searchBreed)
+
+        searchBreed = findViewById(R.id.searchBreed)
 //        searchBreed.setOnQueryTextListener(this)
     }
 
