@@ -2,4 +2,7 @@ package com.cursokotlin.retrofitkotlinexample
 
 import com.google.gson.annotations.SerializedName
 
-data class DogsResponse (@SerializedName("status") var status:String, @SerializedName("message") var images: List<String>)
+data class DogsResponse (
+    @SerializedName("id") var id:Int,
+    @SerializedName("nombre") var nombre: String,
+    )

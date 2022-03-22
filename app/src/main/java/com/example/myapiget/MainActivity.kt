@@ -22,7 +22,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class MainActivity : AppCompatActivity(), androidx.appcompat.widget.SearchView.OnQueryTextListener {
+class MainActivity : AppCompatActivity()/*, androidx.appcompat.widget.SearchView.OnQueryTextListener */{
 
     lateinit var imagesPuppies:List<String>
     lateinit var dogsAdapter: DogsAdapter
@@ -33,6 +33,25 @@ class MainActivity : AppCompatActivity(), androidx.appcompat.widget.SearchView.O
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        addDummyUser()
+    }
+    fun addDummyUser() {
+        val apiService = RestApiService()
+        val userInfo = DogsResponse(
+            id = 3,
+            nombre = "Alex")
+
+        apiService.addUser(userInfo) {
+            if (it?.id != null) {
+                // it = newly added user parsed as response
+                // it?.id = newly added user ID
+            } else {
+
+                //Timber.d("Error registering new user")
+            }
+        }
+    }
+/*
         searchBreed = findViewById(R.id.searchBreed)
         searchBreed.setOnQueryTextListener(this)
 
@@ -115,5 +134,5 @@ class MainActivity : AppCompatActivity(), androidx.appcompat.widget.SearchView.O
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         val viewRoot = findViewById<ConstraintLayout>(R.id.viewRoot)
         imm.hideSoftInputFromWindow(viewRoot.windowToken, 0)
-    }
+    }*/
 }
