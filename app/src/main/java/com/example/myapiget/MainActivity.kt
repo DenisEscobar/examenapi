@@ -1,6 +1,8 @@
 package com.example.myapiget
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.ImageView
@@ -13,7 +15,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cursokotlin.retrofitkotlinexample.APIService
 import com.cursokotlin.retrofitkotlinexample.DogsAdapter
 import com.cursokotlin.retrofitkotlinexample.DogsResponse
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -23,9 +31,9 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class MainActivity : AppCompatActivity()/*, androidx.appcompat.widget.SearchView.OnQueryTextListener */{
+class MainActivity : AppCompatActivity()/*, androidx.appcompat.widget.SearchView.OnQueryTextListener */ {
 
-    lateinit var imagesPuppies:List<String>
+    lateinit var imagesPuppies: List<String>
     lateinit var dogsAdapter: DogsAdapter
 
     lateinit var searchBreed: androidx.appcompat.widget.SearchView
@@ -34,18 +42,49 @@ class MainActivity : AppCompatActivity()/*, androidx.appcompat.widget.SearchView
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        addDummyUser()
+        //addDummyUser()
+        getMethod()
     }
+
     fun addDummyUser() {
         val apiService = RestApiService()
-        val userInfo = DogsResponse(2, "Alex")
+        val userInfo = DogsResponse(3, "Alex")
 
         apiService.addUser(userInfo) {
             if (it?.id != null) {
+                Toast.makeText(this, "registering new user", Toast.LENGTH_LONG).show()
                 // it = newly added user parsed as response
                 // it?.id = newly added user ID
             } else {
                 Toast.makeText(this, "Error registering new user", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+
+    private fun getMethod() {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:3000")
+            .build()
+        val service = retrofit.create(APIService::class.java)
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = service.getapi()
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+                    val gson = GsonBuilder().setPrettyPrinting().create()
+                    val prettyJson = gson.toJson(
+                        JsonParser.parseString(
+                            response.body()
+                                ?.string()
+                        )
+                    )
+                    Log.d("Pretty Printed JSON :", prettyJson)
+                    val intent = Intent(this@MainActivity, DetailsActivity::class.java)
+                    intent.putExtra("json_results", prettyJson)
+                    this@MainActivity.startActivity(intent)
+                } else {
+                    Log.e("RETROFIT_ERROR", response.code().toString())
+                }
             }
         }
     }

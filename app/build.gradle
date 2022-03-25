@@ -29,6 +29,9 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 ext.retrofit_version = '2.3.0'
 ext.cardView_version = '27.1.0'
@@ -61,5 +64,13 @@ dependencies {
     //noinspection GradleCompatible
     implementation "com.android.support:cardview-v7:$cardView_version"
 
+    // Retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 
+// Coroutines to make the HTTP requests asynchronous(In the background thread)
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2'
+    // Okhttp3 for the POST requests
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    // Gson to convert raw JSON to pretty JSON
+    implementation 'com.google.code.gson:gson:2.8.9'
 }
