@@ -8,6 +8,6 @@ interface APIService {
     fun getCharacterByName(@Url url:String): Call<DogsResponse>
 
     @Headers("Content-Type: application/json")
-    @POST("users")
+    @POST("post")
     fun addUser(@Body userData: DogsResponse): Call<DogsResponse>
 }

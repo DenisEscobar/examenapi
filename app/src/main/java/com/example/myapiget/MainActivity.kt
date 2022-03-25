@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.ImageView
+import android.widget.Toast
 //import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -37,17 +38,14 @@ class MainActivity : AppCompatActivity()/*, androidx.appcompat.widget.SearchView
     }
     fun addDummyUser() {
         val apiService = RestApiService()
-        val userInfo = DogsResponse(
-            id = 3,
-            nombre = "Alex")
+        val userInfo = DogsResponse(2, "Alex")
 
         apiService.addUser(userInfo) {
             if (it?.id != null) {
                 // it = newly added user parsed as response
                 // it?.id = newly added user ID
             } else {
-
-                //Timber.d("Error registering new user")
+                Toast.makeText(this, "Error registering new user", Toast.LENGTH_LONG).show()
             }
         }
     }
