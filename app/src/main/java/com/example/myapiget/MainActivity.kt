@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     fun deleteMethod(text: String) {
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://my-json-server.typicode.com/")
+            .baseUrl("http://10.0.2.2:8080")
             .build()
         val service = retrofit.create(APIService::class.java)
         val call = serviceGenerator.delete(text)
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
                     Log.e("RETROFIT_ERROR", "test")
                 }
             }override fun onFailure(call: Call<MutableList<DogsResponse>>, t: Throwable) {
-                TODO("Not yet implemented")
+                Log.e("RETROFIT_ERROR", "test")
             }
         })
     }
@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         val call = serviceGenerator.find()
         val recyclerview = findViewById<RecyclerView>(R.id.rvDogs)
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8081")
+            .baseUrl("http://10.0.2.2:8080")
             .build()
         val service = retrofit.create(APIService::class.java)
         call.clone().enqueue(object : retrofit2.Callback<MutableList<DogsResponse>> {
@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         //val call = serviceGenerator.findnom()
         val recyclerview = findViewById<RecyclerView>(R.id.rvDogs)
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8081")
+            .baseUrl("http://10.0.2.2:8080")
             .build()
         val service = retrofit.create(APIService::class.java)
         val call = serviceGenerator.findnom(text)
