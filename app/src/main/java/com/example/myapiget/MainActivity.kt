@@ -1,15 +1,12 @@
 package com.example.myapiget
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
-import android.widget.ImageView
+import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 //import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cursokotlin.retrofitkotlinexample.APIService
@@ -17,38 +14,59 @@ import com.cursokotlin.retrofitkotlinexample.DogsAdapter
 import com.cursokotlin.retrofitkotlinexample.DogsResponse
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
-import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
-class MainActivity : AppCompatActivity()/*, androidx.appcompat.widget.SearchView.OnQueryTextListener */ {
+class MainActivity : AppCompatActivity() {
 
     lateinit var imagesPuppies: List<String>
     lateinit var dogsAdapter: DogsAdapter
 
-    lateinit var searchBreed: androidx.appcompat.widget.SearchView
+    val serviceGenerator = ServiceBuilder.buildService(APIService::class.java)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //addDummyUser()
-        getMethod()
+
+        val text = findViewById<EditText>(R.id.editTextTextPersonName)
+        val buscar = findViewById<Button>(R.id.buttonbuscarall)
+        val afegir = findViewById<Button>(R.id.buttonafegir)
+        val filtrar = findViewById<Button>(R.id.buttonfiltrar)
+        val borrar = findViewById<Button>(R.id.buttonborrar)
+
+        afegir.setOnClickListener { addDummyUser(text.text.toString()) }
+
+        buscar.setOnClickListener { getMethod() }
+
+        filtrar.setOnClickListener { getMethod(text.text.toString()) }
+
+        borrar.setOnClickListener { deleteMethod(text.text.toString()) }
     }
 
-    fun addDummyUser() {
+    fun deleteMethod(text: String) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://my-json-server.typicode.com/")
+            .build()
+        val service = retrofit.create(APIService::class.java)
+        val call = serviceGenerator.delete(text)
+        call.clone().enqueue(object : retrofit2.Callback<MutableList<DogsResponse>> {
+            override fun onResponse(call: retrofit2.Call<MutableList<DogsResponse>>, response: Response<MutableList<DogsResponse>>) {
+                if (response.isSuccessful) {
+                    Log.d("Pretty Printed JSON :", "borrado")
+                } else {
+                    Log.e("RETROFIT_ERROR", "test")
+                }
+            }override fun onFailure(call: Call<MutableList<DogsResponse>>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+    fun addDummyUser(text: String) {
         val apiService = RestApiService()
-        val userInfo = DogsResponse(3, "Alex")
+        val userInfo = DogsResponse(null, text)
 
         apiService.addUser(userInfo) {
             if (it?.id != null) {
@@ -63,113 +81,83 @@ class MainActivity : AppCompatActivity()/*, androidx.appcompat.widget.SearchView
 
 
     private fun getMethod() {
+        val call = serviceGenerator.find()
+        val recyclerview = findViewById<RecyclerView>(R.id.rvDogs)
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:3000")
+            .baseUrl("http://10.0.2.2:8081")
             .build()
         val service = retrofit.create(APIService::class.java)
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = service.getapi()
-            withContext(Dispatchers.Main) {
-                if (response.isSuccessful) {
-                    val gson = GsonBuilder().setPrettyPrinting().create()
-                    val prettyJson = gson.toJson(
-                        JsonParser.parseString(
-                            response.body()
-                                ?.string()
-                        )
-                    )
-                    Log.d("Pretty Printed JSON :", prettyJson)
-                    val intent = Intent(this@MainActivity, DetailsActivity::class.java)
-                    intent.putExtra("json_results", prettyJson)
-                    this@MainActivity.startActivity(intent)
-                } else {
-                    Log.e("RETROFIT_ERROR", response.code().toString())
+        call.clone().enqueue(object : retrofit2.Callback<MutableList<DogsResponse>> {
+            override fun onResponse(call: retrofit2.Call<MutableList<DogsResponse>>, response: Response<MutableList<DogsResponse>>){
+                if (response.isSuccessful){
+                    recyclerview.apply {
+                        layoutManager = LinearLayoutManager(this@MainActivity)
+                        adapter = DogsAdapter(response.body()!!)
+                        Toast.makeText(applicationContext,"GET correcte!",Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
-        }
-    }
-/*
-        searchBreed = findViewById(R.id.searchBreed)
-        searchBreed.setOnQueryTextListener(this)
-
-        searchByName("Akita")
-    }
-
-    private fun initCharacter(puppies: DogsResponse) {
-        if(puppies.status == "success"){
-            imagesPuppies = puppies.images
-            alert(""+imagesPuppies)
-            val rvDog = findViewById<ImageView>(R.id.imageView)
-            Picasso.get().load(""+imagesPuppies).into(rvDog)
-        }
-
-        //Picasso.with(this).load(imagesPuppies).into(rvDogs)
-
-//        val rvDogs = findViewById<RecyclerView>(R.id.rvDogs)
-//        dogsAdapter = DogsAdapter(imagesPuppies)
-//        rvDogs.setHasFixedSize(true)
-//        rvDogs.layoutManager = LinearLayoutManager(this)
-//        rvDogs.adapter = dogsAdapter
-    }
-
-    private fun getRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("https://dog.ceo/api/breed/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
-    private fun searchByName(query: String) {
-        val api = getRetrofit().create(APIService::class.java)
-        api.getCharacterByName("$query/images").enqueue(object : Callback<DogsResponse> {
-            override fun onResponse(call: Call<DogsResponse>, response: Response<DogsResponse>) {
-                val heroList: List<DogsResponse> = response.body() as List<DogsResponse>
-                val heroes = arrayOfNulls<String>(heroList.size)
-                for (i in heroList.indices) {
-                    heroes[i] = heroList[i].images.toString()
-                }
-                val rvDog = findViewById<ImageView>(R.id.imageView)
-                Picasso.get().load(heroes[0]).into(rvDog)
-
-            }
-
-            override fun onFailure(call: Call<DogsResponse>, t: Throwable) {
-                TODO("Not yet implemented")
+            override fun onFailure(call: retrofit2.Call<MutableList<DogsResponse>>, t: Throwable){
+                t.printStackTrace()
+                Log.e("error", t.message.toString())
             }
 
         })
-//        doAsync {
-//            val call = getRetrofit().create(APIService::class.java).getCharacterByName("$query/images").execute()
-//            val puppies = call.body() as DogsResponse
-//            uiThread {
-//                if(puppies.status == "success") {
-//                    initCharacter(puppies)
-//                }else{
-//                    showErrorDialog()
-//                }
-//                hideKeyboard()
-//            }
-//        }
     }
 
-    private fun showErrorDialog() {
-        alert("Ha ocurrido un error, inténtelo de nuevo.") {
-            yesButton { }
-        }.show()
+    private fun getMethod(text: String) {
+        //val call = serviceGenerator.findnom()
+        val recyclerview = findViewById<RecyclerView>(R.id.rvDogs)
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8081")
+            .build()
+        val service = retrofit.create(APIService::class.java)
+        val call = serviceGenerator.findnom(text)
+        call.clone().enqueue(object : retrofit2.Callback<MutableList<DogsResponse>> {
+            override fun onResponse(call: retrofit2.Call<MutableList<DogsResponse>>, response: Response<MutableList<DogsResponse>>){
+                if (response.isSuccessful){
+                    recyclerview.apply {
+                        layoutManager = LinearLayoutManager(this@MainActivity)
+                        adapter = DogsAdapter(response.body()!!)
+                        Toast.makeText(applicationContext,"GET correcte!",Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            override fun onFailure(call: retrofit2.Call<MutableList<DogsResponse>>, t: Throwable){
+                t.printStackTrace()
+                Log.e("error", t.message.toString())
+            }
+
+        })
     }
 
-    override fun onQueryTextSubmit(query: String): Boolean {
-        searchByName(query.toLowerCase())
-        return true
-    }
 
-    override fun onQueryTextChange(newText: String?): Boolean {
-        return true
-    }
+/*
+CoroutineScope(Dispatchers.IO).launch {
+    val response = service.getapi()
+    withContext(Dispatchers.Main) {
+        if (response.isSuccessful) {
+            recyclerview.apply {
+                layoutManager = LinearLayoutManager(this@MainActivity)
+                adapter = DogsAdapter(response.body()!!)
+                Toast.makeText(applicationContext,"GET correcte!",Toast.LENGTH_SHORT).show()
+            }
 
-    private fun hideKeyboard(){
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-        val viewRoot = findViewById<ConstraintLayout>(R.id.viewRoot)
-        imm.hideSoftInputFromWindow(viewRoot.windowToken, 0)
-    }*/
+            val gson = GsonBuilder().setPrettyPrinting().create()
+          val prettyJson = gson.toJson(
+                JsonParser.parseString(
+                    response.body()
+                        ?.string()
+                )
+            )
+            Log.d("Pretty Printed JSON :", prettyJson)
+            val intent = Intent(this@MainActivity, DetailsActivity::class.java)
+            intent.putExtra("json_results", prettyJson)
+            this@MainActivity.startActivity(intent)
+        } else {
+            Log.e("RETROFIT_ERROR", response.code().toString())
+        }
+    }
+}
+}*/
 }
