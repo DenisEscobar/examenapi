@@ -11,10 +11,10 @@ interface APIService {
     @DELETE("/alumnes/{id}")
     fun deleteid(@Path("id") text: Int?):Call<ResponseData>
 
-    @GET("/qualificacions?modul=1&(nota>=5&nota<=10)")
-    fun getapro():Call<MutableList<ResponseData>>
-    @GET("/qualificacions?modul=1&(nota=5||nota=6||nota=7||nota=8||nota=9||nota=10)")
+    @GET("/qualificacions?nota>=5")
     fun getapro2():Call<MutableList<ResponseData>>
+    @GET("/qualificacions?modul=1&nota=5&nota=6&nota=7&nota=8&nota=9&nota=10")
+    fun getapro():Call<MutableList<ResponseData>>
 
     @PUT("/alumnes/2")
     fun update(@Body requestBody: ResponseData): Call<ResponseData>
