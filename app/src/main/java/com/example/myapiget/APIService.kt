@@ -20,5 +20,5 @@ interface APIService {
     fun addUser(@Body userData: DogsResponse): Call<DogsResponse>
 
     @DELETE("/post/{id}")
-    fun delete(@Path("id") text: String?):Call<MutableList<DogsResponse>>
+    fun delete(@Path("id") text: String?):Call<DogsResponse>
 }

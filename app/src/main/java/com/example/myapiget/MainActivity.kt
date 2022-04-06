@@ -52,14 +52,15 @@ class MainActivity : AppCompatActivity() {
             .build()
         val service = retrofit.create(APIService::class.java)
         val call = serviceGenerator.delete(text)
-        call.clone().enqueue(object : retrofit2.Callback<MutableList<DogsResponse>> {
-            override fun onResponse(call: retrofit2.Call<MutableList<DogsResponse>>, response: Response<MutableList<DogsResponse>>) {
+        call.clone().enqueue(object : retrofit2.Callback<DogsResponse> {
+            override fun onResponse(call: retrofit2.Call<DogsResponse>, response: Response<DogsResponse>) {
                 if (response.isSuccessful) {
                     Log.d("Pretty Printed JSON :", "borrado")
+                    Toast.makeText(applicationContext,"Borrado correcte!",Toast.LENGTH_SHORT).show()
                 } else {
                     Log.e("RETROFIT_ERROR", "test")
                 }
-            }override fun onFailure(call: Call<MutableList<DogsResponse>>, t: Throwable) {
+            }override fun onFailure(call: Call<DogsResponse>, t: Throwable) {
                 Log.e("RETROFIT_ERROR", "test")
             }
         })
