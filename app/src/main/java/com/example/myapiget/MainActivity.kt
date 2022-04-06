@@ -33,12 +33,10 @@ class MainActivity : AppCompatActivity() {
             count.text=""
             update(text.text.toString())
         }
-
         buscar.setOnClickListener {
             getMethod(0)
             getMethod()
         }
-
         filtrar.setOnClickListener {
             count.text=""
             getMethod(0)
@@ -48,7 +46,6 @@ class MainActivity : AppCompatActivity() {
                 }catch (e : Exception){}
             }
         }
-
         borrar.setOnClickListener {
             getMethod(0)
             count.text=""
@@ -73,6 +70,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
     fun update(text: String) {
         val userInfo = ResponseData(null, text)
         val apiService = RestApiService()
@@ -102,7 +100,6 @@ class MainActivity : AppCompatActivity() {
                 t.printStackTrace()
                 Log.e("error", t.message.toString())
             }
-
         })
     }
 
