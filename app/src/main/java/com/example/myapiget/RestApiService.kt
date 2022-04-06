@@ -6,7 +6,7 @@ import retrofit2.Response
 
 class RestApiService {
 
-    fun addUser(userData: ResponseData, onResult: (ResponseData?) -> Unit){
+    fun modifiUser(userData: ResponseData, onResult: (ResponseData?) -> Unit){
         val retrofit = ServiceBuilder.buildService(APIService::class.java)
         retrofit.update(userData).enqueue(
             object : Callback<ResponseData> {

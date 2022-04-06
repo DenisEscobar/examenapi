@@ -29,25 +29,25 @@ class MainActivity : AppCompatActivity() {
         val borrar = findViewById<Button>(R.id.buttonborrar)
 
         afegir.setOnClickListener {
-            getMethod(0)
+            getfilter(0)
             count.text=""
             update(text.text.toString())
         }
         buscar.setOnClickListener {
-            getMethod(0)
-            getMethod()
+            getfilter(0)
+            getModulo()
         }
         filtrar.setOnClickListener {
             count.text=""
-            getMethod(0)
+            getfilter(0)
             if (text.text.toString()!=""){
                 try {
-                    getMethod(text.text.toString().toInt())
+                    getfilter(text.text.toString().toInt())
                 }catch (e : Exception){}
             }
         }
         borrar.setOnClickListener {
-            getMethod(0)
+            getfilter(0)
             count.text=""
             try{
                 deleteMethod(text.text.toString().toInt())
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         val userInfo = ResponseData(null, text)
         val apiService = RestApiService()
 
-        apiService.addUser(userInfo) {
+        apiService.modifiUser(userInfo) {
             if (it?.id != null) {
                 Toast.makeText(this, "registering new user", Toast.LENGTH_LONG).show()
             } else {
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun getMethod() {
+    private fun getModulo() {
         val call = serviceGenerator.getapro()
 
         call.clone().enqueue(object : retrofit2.Callback<MutableList<ResponseData>> {
@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun getMethod(text: Int) {
+    private fun getfilter(text: Int) {
         val recyclerview = findViewById<RecyclerView>(R.id.rvDogs)
 
         val call = serviceGenerator.findid(text)
