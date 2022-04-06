@@ -13,7 +13,7 @@ interface APIService {
 
     @GET("/qualificacions?modul=1&(nota>=5&nota<=10)")
     fun getapro():Call<MutableList<ResponseData>>
-    @GET("/qualificacions?modul=1&(nota>=5||nota=6||nota=7||nota=8||nota=9||nota<=10)")
+    @GET("/qualificacions?modul=1&(nota=5||nota=6||nota=7||nota=8||nota=9||nota=10)")
     fun getapro2():Call<MutableList<ResponseData>>
 
     @PUT("/alumnes/2")
