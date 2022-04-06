@@ -5,10 +5,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ServiceBuilder {
+
     private val client = OkHttpClient.Builder().build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://10.0.2.2:8080") // change this IP for testing by your actual machine IP
+        .baseUrl("http://10.0.2.2:8081")
         .addConverterFactory(GsonConverterFactory.create())
         .client(client)
         .build()

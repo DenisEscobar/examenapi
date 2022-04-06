@@ -4,76 +4,82 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
-//import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.cursokotlin.retrofitkotlinexample.APIService
-import com.cursokotlin.retrofitkotlinexample.DogsAdapter
-import com.cursokotlin.retrofitkotlinexample.DogsResponse
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonParser
 import retrofit2.Call
 import retrofit2.Response
-import retrofit2.Retrofit
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var imagesPuppies: List<String>
-    lateinit var dogsAdapter: DogsAdapter
-
     val serviceGenerator = ServiceBuilder.buildService(APIService::class.java)
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
+        val count = findViewById<TextView>(R.id.textViewcount)
         val text = findViewById<EditText>(R.id.editTextTextPersonName)
         val buscar = findViewById<Button>(R.id.buttonbuscarall)
         val afegir = findViewById<Button>(R.id.buttonafegir)
         val filtrar = findViewById<Button>(R.id.buttonfiltrar)
         val borrar = findViewById<Button>(R.id.buttonborrar)
 
-        afegir.setOnClickListener { addDummyUser(text.text.toString()) }
+        afegir.setOnClickListener {
+            getMethod(0)
+            count.text=""
+            update(text.text.toString())
+        }
 
-        buscar.setOnClickListener { getMethod() }
+        buscar.setOnClickListener {
+            getMethod(0)
+            getMethod()
+        }
 
-        filtrar.setOnClickListener { getMethod(text.text.toString()) }
+        filtrar.setOnClickListener {
+            count.text=""
+            getMethod(0)
+            if (text.text.toString()!=""){
+                try {
+                    getMethod(text.text.toString().toInt())
+                }catch (e : Exception){}
+            }
+        }
 
-        borrar.setOnClickListener { deleteMethod(text.text.toString()) }
+        borrar.setOnClickListener {
+            getMethod(0)
+            count.text=""
+            try{
+                deleteMethod(text.text.toString().toInt())
+            }catch (e : Exception){}
+        }
     }
 
-    fun deleteMethod(text: String) {
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080")
-            .build()
-        val service = retrofit.create(APIService::class.java)
-        val call = serviceGenerator.delete(text)
-        call.clone().enqueue(object : retrofit2.Callback<DogsResponse> {
-            override fun onResponse(call: retrofit2.Call<DogsResponse>, response: Response<DogsResponse>) {
+    fun deleteMethod(text: Int) {
+        val call = serviceGenerator.deleteid(text)
+        call.clone().enqueue(object : retrofit2.Callback<ResponseData> {
+            override fun onResponse(call: Call<ResponseData>, response: Response<ResponseData>) {
                 if (response.isSuccessful) {
                     Log.d("Pretty Printed JSON :", "borrado")
                     Toast.makeText(applicationContext,"Borrado correcte!",Toast.LENGTH_SHORT).show()
                 } else {
                     Log.e("RETROFIT_ERROR", "test")
                 }
-            }override fun onFailure(call: Call<DogsResponse>, t: Throwable) {
+            }override fun onFailure(call: Call<ResponseData>, t: Throwable) {
                 Log.e("RETROFIT_ERROR", "test")
             }
         })
     }
-    fun addDummyUser(text: String) {
+    fun update(text: String) {
+        val userInfo = ResponseData(null, text)
         val apiService = RestApiService()
-        val userInfo = DogsResponse(null, text)
 
         apiService.addUser(userInfo) {
             if (it?.id != null) {
                 Toast.makeText(this, "registering new user", Toast.LENGTH_LONG).show()
-                // it = newly added user parsed as response
-                // it?.id = newly added user ID
             } else {
                 Toast.makeText(this, "Error registering new user", Toast.LENGTH_LONG).show()
             }
@@ -82,23 +88,17 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun getMethod() {
-        val call = serviceGenerator.find()
-        val recyclerview = findViewById<RecyclerView>(R.id.rvDogs)
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080")
-            .build()
-        val service = retrofit.create(APIService::class.java)
-        call.clone().enqueue(object : retrofit2.Callback<MutableList<DogsResponse>> {
-            override fun onResponse(call: retrofit2.Call<MutableList<DogsResponse>>, response: Response<MutableList<DogsResponse>>){
+        val call = serviceGenerator.getapro()
+
+        call.clone().enqueue(object : retrofit2.Callback<MutableList<ResponseData>> {
+            override fun onResponse(call: Call<MutableList<ResponseData>>, response: Response<MutableList<ResponseData>>){
                 if (response.isSuccessful){
-                    recyclerview.apply {
-                        layoutManager = LinearLayoutManager(this@MainActivity)
-                        adapter = DogsAdapter(response.body()!!)
-                        Toast.makeText(applicationContext,"GET correcte!",Toast.LENGTH_SHORT).show()
-                    }
+                    val count = findViewById<TextView>(R.id.textViewcount)
+                    count.text=response.body()?.size.toString()
+                    count.textSize= 200F
                 }
             }
-            override fun onFailure(call: retrofit2.Call<MutableList<DogsResponse>>, t: Throwable){
+            override fun onFailure(call: Call<MutableList<ResponseData>>, t: Throwable){
                 t.printStackTrace()
                 Log.e("error", t.message.toString())
             }
@@ -106,59 +106,24 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun getMethod(text: String) {
-        //val call = serviceGenerator.findnom()
+    private fun getMethod(text: Int) {
         val recyclerview = findViewById<RecyclerView>(R.id.rvDogs)
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080")
-            .build()
-        val service = retrofit.create(APIService::class.java)
-        val call = serviceGenerator.findnom(text)
-        call.clone().enqueue(object : retrofit2.Callback<MutableList<DogsResponse>> {
-            override fun onResponse(call: retrofit2.Call<MutableList<DogsResponse>>, response: Response<MutableList<DogsResponse>>){
+
+        val call = serviceGenerator.findid(text)
+        call.clone().enqueue(object : retrofit2.Callback<MutableList<ResponseData>> {
+            override fun onResponse(call: Call<MutableList<ResponseData>>, response: Response<MutableList<ResponseData>>){
                 if (response.isSuccessful){
                     recyclerview.apply {
                         layoutManager = LinearLayoutManager(this@MainActivity)
-                        adapter = DogsAdapter(response.body()!!)
+                        adapter = Adapter(response.body()!!)
                         Toast.makeText(applicationContext,"GET correcte!",Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-            override fun onFailure(call: retrofit2.Call<MutableList<DogsResponse>>, t: Throwable){
+            override fun onFailure(call: Call<MutableList<ResponseData>>, t: Throwable){
                 t.printStackTrace()
                 Log.e("error", t.message.toString())
             }
-
         })
     }
-
-
-/*
-CoroutineScope(Dispatchers.IO).launch {
-    val response = service.getapi()
-    withContext(Dispatchers.Main) {
-        if (response.isSuccessful) {
-            recyclerview.apply {
-                layoutManager = LinearLayoutManager(this@MainActivity)
-                adapter = DogsAdapter(response.body()!!)
-                Toast.makeText(applicationContext,"GET correcte!",Toast.LENGTH_SHORT).show()
-            }
-
-            val gson = GsonBuilder().setPrettyPrinting().create()
-          val prettyJson = gson.toJson(
-                JsonParser.parseString(
-                    response.body()
-                        ?.string()
-                )
-            )
-            Log.d("Pretty Printed JSON :", prettyJson)
-            val intent = Intent(this@MainActivity, DetailsActivity::class.java)
-            intent.putExtra("json_results", prettyJson)
-            this@MainActivity.startActivity(intent)
-        } else {
-            Log.e("RETROFIT_ERROR", response.code().toString())
-        }
-    }
-}
-}*/
 }
